@@ -1,0 +1,38 @@
+random_seed: 42
+numpy_seed: 42
+torch_seed: 42
+
+data:
+  kaggle_dataset: "adisongoh/it-service-ticket-classification-dataset"
+  csv_file: "all_tickets_processed_improved_v3.csv"
+
+train_test_split:
+  test_size: 0.2
+  stratify: true
+  random_state: 42
+
+distilbert:
+  model_name: "distilbert-base-uncased"
+  max_length: 256
+
+training_args:
+  seed: 42
+  per_device_train_batch_size: 32
+  num_train_epochs: 2
+  fp16: true
+
+embedding:
+  model_name: "all-MiniLM-L6-v2"
+
+llm:
+  model_name: "Qwen/Qwen2.5-3B-Instruct"
+  batch_size: 4
+
+hybrid_classifier:
+  confidence_threshold: 0.9
+  top_k: 3
+
+paths:
+  data_dir: "./data"
+  chroma_db: "./data/chroma_db"
+  results: "./results"

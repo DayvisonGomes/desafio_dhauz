@@ -1,0 +1,10 @@
+originals/
+data/
+results/
+*.chroma_db/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+venv/
+env/
+.vscode/
