@@ -1,5 +1,4 @@
 originals/
-data/
 results/
 *.chroma_db/
 __pycache__/
