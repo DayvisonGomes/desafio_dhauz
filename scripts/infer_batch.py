@@ -1,10 +1,17 @@
 """Run batch inference using a saved DistilBERT checkpoint.
 
 Usage:
-  python scripts/infer_batch.py data/input_examples.txt --checkpoint ./results
+    python scripts/infer_batch.py data/input_examples.txt --checkpoint ./results
 """
 import argparse
 from pathlib import Path
+import sys
+
+# ensure project root is on sys.path when running the script directly
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+
 import json
 from dhauz_ticket_classifier.models.distilbert_classifier import DistilBERTClassifier
 

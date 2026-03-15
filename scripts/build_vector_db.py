@@ -1,5 +1,12 @@
 """Script: build Chroma vector DB from processed dataset"""
 from pathlib import Path
+import sys
+
+# ensure project root is on sys.path when running the script directly
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 import pandas as pd
 from dhauz_ticket_classifier.rag.vector_store import VectorStore
 

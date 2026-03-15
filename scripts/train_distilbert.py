@@ -3,6 +3,13 @@
 This script expects `data/dataset_processed.csv` to exist (run `scripts/download_data.py`).
 """
 from pathlib import Path
+import sys
+
+# ensure project root is on sys.path when running the script directly
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from dhauz_ticket_classifier.models.distilbert_classifier import DistilBERTClassifier

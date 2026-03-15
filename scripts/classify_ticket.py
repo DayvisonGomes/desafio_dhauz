@@ -1,6 +1,12 @@
 """CLI: classify a single ticket (placeholder to wire components)"""
 import argparse
 from pathlib import Path
+import sys
+
+# ensure project root is on sys.path when running the script directly
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 def main():
     parser = argparse.ArgumentParser()

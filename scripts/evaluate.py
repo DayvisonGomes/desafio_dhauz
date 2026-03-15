@@ -1,9 +1,16 @@
 """Avaliação: seleciona N amostras fixas e gera classification_report + confusion matrix heatmap.
 
 Usage:
-  python scripts/evaluate.py --processed data/dataset_processed.csv --checkpoint ./results --out-dir ./results --sample-size 200
+    python scripts/evaluate.py --processed data/dataset_processed.csv --checkpoint ./results --out-dir ./results --sample-size 200
 """
 from pathlib import Path
+import sys
+
+# ensure project root is on sys.path when running the script directly
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+
 import argparse
 import pandas as pd
 import os

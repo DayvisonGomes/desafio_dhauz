@@ -1,10 +1,17 @@
 """Avaliação do classificador RAG/Hybrid: seleciona N amostras e gera classification_report + heatmap.
 
 Usage:
-  python scripts/evaluate_rag.py --processed data/dataset_processed.csv --chroma-dir data/chroma_db --checkpoint ./results --out-dir ./results --mode hybrid --sample-size 200
+    python scripts/evaluate_rag.py --processed data/dataset_processed.csv --chroma-dir data/chroma_db --checkpoint ./results --out-dir ./results --mode hybrid --sample-size 200
 """
 import argparse
 from pathlib import Path
+import sys
+
+# ensure project root is on sys.path when running the script directly
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+
 import pandas as pd
 import os
 import numpy as np
