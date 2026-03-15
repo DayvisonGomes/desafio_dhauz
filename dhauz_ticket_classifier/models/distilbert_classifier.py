@@ -75,7 +75,7 @@ class DistilBERTClassifier:
 
     def load(self, checkpoint_dir: str):
         """Load model and tokenizer from `checkpoint_dir`"""
-        self.tokenizer = DistilBertTokenizerFast.from_pretrained(checkpoint_dir)
-        self.model = DistilBertForSequenceClassification.from_pretrained(checkpoint_dir)
+        self.tokenizer = DistilBertTokenizerFast.from_pretrained(checkpoint_dir, local_files_only=True)
+        self.model = DistilBertForSequenceClassification.from_pretrained(checkpoint_dir, local_files_only=True)
         self.model.to(self.device)
 
