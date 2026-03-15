@@ -19,6 +19,7 @@ from dhauz_ticket_classifier.models.llm import LLMPipeline
 from dhauz_ticket_classifier.rag.vector_store import VectorStore
 from dhauz_ticket_classifier.interfaces.gradio_app import GradioApp
 from dhauz_ticket_classifier.data.download import DataDownloader
+from dhauz_ticket_classifier.utils.helpers import maybe_load_llm, infer_classes
 
 
 def main():
@@ -98,67 +99,8 @@ def main():
         print("Checkpoint not found at", ckpt, "— you may need to train first with scripts/train_distilbert.py")
 
     # LLM pipeline (optional). Supports local HF model or remote endpoint (--use-llm-remote)
-    llm = None
-    if args.use_llm_remote:
-        # remote wrapper
-        class RemoteLLM:
-            def __init__(self, url: str, api_key: str = None, provider: str = 'hf'):
-                self.url = url
-                self.api_key = api_key
-                self.provider = provider
-                try:
-                    import requests
-                except Exception:
-                    requests = None
-                self._requests = requests
-
-            def generate(self, prompts, batch_size=1):
-                if self._requests is None:
-                    raise RuntimeError('requests package not available; install requests')
-                headers = {}
-                if self.api_key:
-                    headers['Authorization'] = f"Bearer {self.api_key}"
-                results = []
-                for prompt in prompts:
-                    payload = {"inputs": prompt}
-                    try:
-                        resp = self._requests.post(self.url, headers=headers, json=payload, timeout=60)
-                        resp.raise_for_status()
-                        data = resp.json()
-                        if isinstance(data, list) and len(data) > 0 and 'generated_text' in data[0]:
-                            results.append(data)
-                        elif isinstance(data, dict) and 'generated_text' in data:
-                            results.append({'generated_text': data['generated_text']})
-                        else:
-                            results.append({'generated_text': str(data)})
-                    except Exception as e:
-                        results.append({'generated_text': f'{{"error": "{e}"}}'})
-                return results
-
-        if not args.remote_llm_url:
-            print('Error: --use-llm-remote set but --remote-llm-url not provided')
-        else:
-            remote_key = args.remote_llm_key or os.environ.get('REMOTE_LLM_KEY')
-            llm = RemoteLLM(url=args.remote_llm_url, api_key=remote_key, provider=args.remote_llm_provider)
-    elif args.use_llm:
-        try:
-            from ..dhauz_ticket_classifier.config import LLM_MODEL_NAME
-        except Exception:
-            try:
-                from dhauz_ticket_classifier.config import LLM_MODEL_NAME
-            except Exception:
-                LLM_MODEL_NAME = None
-
-        model_name = args.llm_model or LLM_MODEL_NAME
-        if model_name is None:
-            print("No default LLM model configured. Please pass --llm-model MODEL_NAME or set LLM_MODEL_NAME in config.")
-        else:
-            try:
-                print(f"Loading LLM model: {model_name} — this may require significant GPU memory...")
-                llm = LLMPipeline(model_name=model_name)
-            except Exception as e:
-                print("Failed to create LLM pipeline:", e)
-                llm = None
+    remote_key = args.remote_llm_key or os.environ.get('REMOTE_LLM_KEY')
+    llm = maybe_load_llm(use_llm=args.use_llm, use_remote=args.use_llm_remote, remote_url=args.remote_llm_url, remote_key=remote_key, model_name=args.llm_model)
 
     # If classes are still unknown, try to infer from vector store metadata
     if classes is None:

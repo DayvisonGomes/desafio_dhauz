@@ -20,6 +20,7 @@ import seaborn as sns
 import json
 
 from sklearn.metrics import classification_report, confusion_matrix
+from dhauz_ticket_classifier.utils.helpers import save_classification_report
 
 from sklearn.model_selection import train_test_split
 
@@ -72,16 +73,9 @@ def evaluate(processed_csv: str, checkpoint: str, out_dir: str, sample_size: int
     report_dict = classification_report(true_labels, pred_labels, digits=4, output_dict=True)
     print(classification_report(true_labels, pred_labels, digits=4))
 
-    # Save classification report and class-index mapping
-    os.makedirs(out_dir, exist_ok=True)
-    report_path = Path(out_dir) / "classification_report.json"
-    with open(report_path, "w", encoding="utf8") as fh:
-        json.dump(report_dict, fh, ensure_ascii=False, indent=2)
-
-    class_map = {str(i): c for i, c in enumerate(classes)}
-    mapping_path = Path(out_dir) / "class_index_map.json"
-    with open(mapping_path, "w", encoding="utf8") as fh:
-        json.dump(class_map, fh, ensure_ascii=False, indent=2)
+    save_info = save_classification_report(report_dict, classes, out_dir=out_dir, prefix='classification_report')
+    report_path = save_info['report']
+    mapping_path = save_info['class_map']
 
     # Confusion matrix heatmap
     cm = confusion_matrix(true_labels, pred_labels, labels=classes)

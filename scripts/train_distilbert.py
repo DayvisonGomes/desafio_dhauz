@@ -41,4 +41,13 @@ def main(processed_csv: str = "data/dataset_processed.csv", output_dir: str = RE
 
 
 if __name__ == '__main__':
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Train DistilBERT on processed dataset')
+    parser.add_argument('--processed', type=str, default='data/dataset_processed.csv', help='Processed CSV path')
+    parser.add_argument('--output-dir', type=str, default=RESULTS_DIR, help='Output directory for checkpoint')
+    parser.add_argument('--num-epochs', type=int, default=2, help='Number of training epochs')
+    parser.add_argument('--batch-size', type=int, default=32, help='Training batch size')
+    args = parser.parse_args()
+
+    main(processed_csv=args.processed, output_dir=args.output_dir, num_epochs=args.num_epochs, batch_size=args.batch_size)

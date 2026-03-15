@@ -24,9 +24,9 @@ from sklearn.model_selection import train_test_split
 
 from dhauz_ticket_classifier.rag.vector_store import VectorStore
 from dhauz_ticket_classifier.models.distilbert_classifier import DistilBERTClassifier
-from dhauz_ticket_classifier.models.llm import LLMPipeline
 from dhauz_ticket_classifier.rag.classifier import RAGClassifier, HybridClassifier
 from dhauz_ticket_classifier.config import TRAIN_TEST_SPLIT_SEED
+from dhauz_ticket_classifier.utils.helpers import maybe_load_llm, infer_classes, save_classification_report
 
 
 def load_vector_store(chroma_dir: str, import_zip: str = None, import_overwrite: bool = False):
@@ -39,47 +39,7 @@ def load_vector_store(chroma_dir: str, import_zip: str = None, import_overwrite:
     return vs
 
 
-def maybe_load_llm(use_llm: bool, use_remote: bool, remote_url: str = None, remote_key: str = None, provider: str = 'hf', model_name: str = None):
-    if use_remote:
-        class RemoteLLM:
-            def __init__(self, url: str, api_key: str = None, provider: str = 'hf'):
-                try:
-                    import requests
-                except Exception:
-                    requests = None
-                self._requests = requests
-                self.url = url
-                self.api_key = api_key
-
-            def generate(self, prompts, batch_size=1):
-                if self._requests is None:
-                    raise RuntimeError('requests not available; install requests')
-                headers = {}
-                if self.api_key:
-                    headers['Authorization'] = f"Bearer {self.api_key}"
-                results = []
-                for prompt in prompts:
-                    payload = {"inputs": prompt}
-                    resp = self._requests.post(self.url, headers=headers, json=payload, timeout=60)
-                    resp.raise_for_status()
-                    data = resp.json()
-                    if isinstance(data, list) and len(data) > 0 and 'generated_text' in data[0]:
-                        results.append(data)
-                    elif isinstance(data, dict) and 'generated_text' in data:
-                        results.append({'generated_text': data['generated_text']})
-                    else:
-                        results.append({'generated_text': str(data)})
-                return results
-
-        if not remote_url:
-            raise ValueError('Remote LLM requested but no --remote-llm-url provided')
-        return RemoteLLM(remote_url, api_key=remote_key, provider=provider)
-    elif use_llm:
-        if model_name is None:
-            raise ValueError('Local LLM requested but no model name provided')
-        return LLMPipeline(model_name=model_name)
-    else:
-        return None
+# maybe_load_llm is provided by helpers (imported above)
 
 
 def evaluate(processed_csv: str, chroma_dir: str, checkpoint: str, out_dir: str, mode: str = 'hybrid', sample_size: int = 200, use_train: bool = False, seed: int = TRAIN_TEST_SPLIT_SEED, use_llm: bool = False, use_remote_llm: bool = False, remote_url: str = None, remote_key: str = None, llm_model: str = None):
@@ -124,15 +84,10 @@ def evaluate(processed_csv: str, chroma_dir: str, checkpoint: str, out_dir: str,
     report_dict = classification_report(true_labels, pred_labels, digits=4, output_dict=True)
     print(classification_report(true_labels, pred_labels, digits=4))
 
-    os.makedirs(out_dir, exist_ok=True)
-    report_path = Path(out_dir) / 'classification_report_rag.json'
-    with open(report_path, 'w', encoding='utf8') as fh:
-        json.dump(report_dict, fh, ensure_ascii=False, indent=2)
-
-    class_map = {str(i): c for i, c in enumerate(classes)}
-    mapping_path = Path(out_dir) / 'class_index_map_rag.json'
-    with open(mapping_path, 'w', encoding='utf8') as fh:
-        json.dump(class_map, fh, ensure_ascii=False, indent=2)
+    # save report and mapping via helper
+    save_info = save_classification_report(report_dict, classes, out_dir=out_dir, prefix='classification_report_rag')
+    report_path = save_info['report']
+    mapping_path = save_info['class_map']
 
     cm = confusion_matrix(true_labels, pred_labels, labels=classes)
     fig, ax = plt.subplots(figsize=(10, 8))

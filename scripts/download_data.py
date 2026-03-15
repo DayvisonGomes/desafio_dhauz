@@ -20,9 +20,28 @@ def main():
     print(f"Dataset shape: {df.shape}")
     pre = TextPreprocessor()
     df["clean_text"] = df["text"].apply(pre.preprocess)
-    df.to_csv(out_dir / "dataset_processed.csv", index=False)
-    print("Saved to", out_dir / "dataset_processed.csv")
+    out_file = Path(out_dir) / "dataset_processed.csv"
+    df.to_csv(out_file, index=False)
+    print("Saved to", out_file)
 
 
 if __name__ == '__main__':
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Download and preprocess dataset')
+    parser.add_argument('--out-dir', type=str, default='data', help='Output directory for processed CSV')
+    args = parser.parse_args()
+
+    # allow custom out-dir
+    def run_with_args(out_dir: str = args.out_dir):
+        out_path = Path(out_dir)
+        out_path.mkdir(parents=True, exist_ok=True)
+        print("Downloading dataset...")
+        df = DataDownloader.download()
+        pre = TextPreprocessor()
+        df["clean_text"] = df["text"].apply(pre.preprocess)
+        saved = out_path / "dataset_processed.csv"
+        df.to_csv(saved, index=False)
+        print("Saved to", saved)
+
+    run_with_args()

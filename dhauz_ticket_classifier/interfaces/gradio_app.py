@@ -34,4 +34,4 @@ class GradioApp:
             description="Hybrid classifier using DistilBERT + Retrieval + LLM reasoning.",
             **kwargs
         )
-        demo.launch()
+        demo.launch(share=True)
