@@ -5,7 +5,6 @@ import torch
 from transformers import DistilBertTokenizerFast, DistilBertForSequenceClassification, Trainer, TrainingArguments
 from datasets import Dataset
 from sklearn.metrics import accuracy_score, f1_score
-from tqdm.auto import tqdm
 
 
 class DistilBERTClassifier:
@@ -15,16 +14,9 @@ class DistilBERTClassifier:
         self.tokenizer = DistilBertTokenizerFast.from_pretrained(model_name)
         self.model = None
 
-    def train(self, train_df, val_df, classes: List[str], output_dir: str = "./results", num_epochs: int = 2, batch_size: int = 32):
-        train_records = []
-        for _, row in tqdm(train_df[["text", "label"]].iterrows(), total=len(train_df), desc='Preparing train records'):
-            train_records.append({"text": str(row["text"]), "label": int(row["label"])})
-        val_records = []
-        for _, row in tqdm(val_df[["text", "label"]].iterrows(), total=len(val_df), desc='Preparing val records'):
-            val_records.append({"text": str(row["text"]), "label": int(row["label"])})
-
-        train_ds = Dataset.from_list(train_records)
-        val_ds = Dataset.from_list(val_records)
+    def train(self, train_df, val_df, classes: List[str], output_dir: str = "./results", num_epochs: int = 2, batch_size: int = 32):       
+        train_ds = Dataset.from_pandas(train_df.reset_index(drop=True))
+        val_ds = Dataset.from_pandas(val_df.reset_index(drop=True))
 
         def tokenize(example):
             return self.tokenizer(example["text"], padding="max_length", truncation=True, max_length=256)
@@ -43,6 +35,10 @@ class DistilBERTClassifier:
             num_train_epochs=num_epochs,
             logging_steps=100,
             fp16=torch.cuda.is_available(),
+            evaluation_strategy="epoch",
+            save_strategy="epoch",
+            load_best_model_at_end=True,
+            metric_for_best_model="f1",
         )
 
         def compute_metrics(eval_pred):
