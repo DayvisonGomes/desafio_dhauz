@@ -113,6 +113,31 @@ python scripts/demo.py --use-llm --llm-model "Qwen/Qwen2.5-3B-Instruct"
 
 AVISO: carregar um LLM grande localmente requer bastante VRAM. Se ocorrer OOM, reduza `--llm-batch` (ou deixe `--use-llm` desativado) e use o modo `hybrid` ou execute a geração em instância maior.
 
+Avaliação (classification_report e matriz de confusão)
+-----------------------------------------------
+
+Comandos para avaliar modelos com 200 amostras reproduzíveis (salva relatório JSON, heatmap PNG e CSV de previsões):
+
+```bash
+# Avaliar DistilBERT (val por padrão, salva em ./results)
+python scripts/evaluate.py --processed data/dataset_processed.csv --checkpoint ./results --out-dir ./results
+
+# Avaliar RAG/Hybrid (val por padrão). Modo: rag ou hybrid
+python scripts/evaluate_rag.py --processed data/dataset_processed.csv --chroma-dir data/chroma_db --checkpoint ./results --out-dir ./results --mode hybrid
+
+# Usar amostra da base de treino em vez da validação
+python scripts/evaluate.py --use-train
+python scripts/evaluate_rag.py --use-train
+
+# Avaliar RAG com LLM remoto (HuggingFace Inference API)
+python scripts/evaluate_rag.py --use-llm-remote --remote-llm-url "https://api-inference.huggingface.co/models/SEU-MODELO" --remote-llm-key $HF_KEY
+```
+
+Arquivos gerados (`--out-dir`, padrão `./results`):
+- `classification_report.json` / `classification_report_rag.json` — relatório de métricas em JSON
+- `class_index_map.json` / `class_index_map_rag.json` — mapeamento índice→classe
+- `confusion_matrix_heatmap.png` / `confusion_matrix_rag_heatmap.png` — heatmap da matriz de confusão
+- `evaluation_predictions.csv` / `evaluation_rag_predictions.csv` — CSV com textos e previsões
 Arquitetura e decisões
 ----------------------
 
