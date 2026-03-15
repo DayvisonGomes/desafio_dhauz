@@ -121,6 +121,3 @@ Arquitetura e decisões
 - O Agent (Seção 13) está disponível como `TicketAgent` e pode ser integrado ao fluxo principal se desejar (o padrão usa as classes diretamente).
 - Batching: DistilBERT e recuperação são batched; LLM batch é configurável (padrão 4).
 - Seeds: definidas em `dhauz_ticket_classifier/config.py` e `config.yaml` para reprodutibilidade.
-
-Próximos passos sugeridos
-- Se quiser, posso: (1) preencher scripts para criar/baixar os modelos LLM automaticamente no Colab; (2) adicionar testes unitários leves; (3) integrar o agent como opção ativa no `scripts/demo.py`.
