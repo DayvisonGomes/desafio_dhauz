@@ -2,6 +2,7 @@
 from langchain_core.documents import Document
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
+from tqdm.auto import tqdm
 import os
 import zipfile
 import shutil
@@ -16,7 +17,7 @@ class VectorStore:
 
     def create_from_dataframe(self, df):
         docs = []
-        for _, row in df.iterrows():
+        for _, row in tqdm(df.iterrows(), total=len(df), desc='Preparing documents'):
             docs.append(Document(page_content=row["text"], metadata={"class": row["class"], "original_text": row["text"]}))
         os.makedirs(self.persist_dir, exist_ok=True)
         self.db = Chroma.from_documents(docs, self.embedding_model, persist_directory=self.persist_dir)

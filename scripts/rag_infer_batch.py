@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 import argparse
 import json
+from tqdm.auto import tqdm
 
 # ensure project root is on sys.path when running the script directly
 ROOT = Path(__file__).resolve().parent.parent
@@ -74,7 +75,7 @@ def main():
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     with out_path.open('w', encoding='utf8') as fo:
-        for i in range(0, len(texts), args.process_batch):
+        for i in tqdm(range(0, len(texts), args.process_batch), desc='Batches'):
             batch = texts[i:i+args.process_batch]
             if args.mode == 'rag':
                 results = rag.classify_batch(batch, batch_size=args.llm_batch)

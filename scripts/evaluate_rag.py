@@ -27,6 +27,7 @@ from dhauz_ticket_classifier.models.distilbert_classifier import DistilBERTClass
 from dhauz_ticket_classifier.rag.classifier import RAGClassifier, HybridClassifier
 from dhauz_ticket_classifier.config import TRAIN_TEST_SPLIT_SEED
 from dhauz_ticket_classifier.utils.helpers import maybe_load_llm, infer_classes, save_classification_report
+from tqdm.auto import tqdm
 
 
 def load_vector_store(chroma_dir: str, import_zip: str = None, import_overwrite: bool = False):
@@ -72,10 +73,15 @@ def evaluate(processed_csv: str, chroma_dir: str, checkpoint: str, out_dir: str,
 
     texts = sample['text'].astype(str).tolist()
 
-    if mode == 'rag':
-        outputs = rag.classify_batch(texts, batch_size=None)
-    else:
-        outputs = hybrid.classify_batch(texts, batch_size=None)
+    outputs = []
+    proc_batch = 32
+    for i in tqdm(range(0, len(texts), proc_batch), desc='Batches'):
+        batch = texts[i:i+proc_batch]
+        if mode == 'rag':
+            res = rag.classify_batch(batch, batch_size=None)
+        else:
+            res = hybrid.classify_batch(batch, batch_size=None)
+        outputs.extend(res)
 
     pred_labels = [o.get('class', 'Miscellaneous') if o is not None else 'Miscellaneous' for o in outputs]
     true_labels = sample['class'].tolist()

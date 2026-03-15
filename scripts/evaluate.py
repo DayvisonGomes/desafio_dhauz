@@ -21,6 +21,7 @@ import json
 
 from sklearn.metrics import classification_report, confusion_matrix
 from dhauz_ticket_classifier.utils.helpers import save_classification_report
+from tqdm.auto import tqdm
 
 from sklearn.model_selection import train_test_split
 
@@ -59,7 +60,7 @@ def evaluate(processed_csv: str, checkpoint: str, out_dir: str, sample_size: int
     # Predict in batches
     batch_size = 32
     all_preds = []
-    for i in range(0, len(texts), batch_size):
+    for i in tqdm(range(0, len(texts), batch_size), desc='Batches'):
         batch = texts[i:i+batch_size]
         probs = clf.predict_batch(batch)
         preds = np.argmax(probs, axis=1).tolist()

@@ -146,3 +146,25 @@ Arquitetura e decisões
 - O Agent (Seção 13) está disponível como `TicketAgent` e pode ser integrado ao fluxo principal se desejar (o padrão usa as classes diretamente).
 - Batching: DistilBERT e recuperação são batched; LLM batch é configurável (padrão 4).
 - Seeds: definidas em `dhauz_ticket_classifier/config.py` e `config.yaml` para reprodutibilidade.
+
+**Progresso e Parâmetros dos Scripts**
+
+- **Progresso**: os scripts longos exibem barras de progresso via `tqdm` (preparação de registros, criação de documentos para Chroma, batches de inferência). Você verá progresso ao executar `train_distilbert.py`, `build_vector_db.py`, `evaluate.py`, `evaluate_rag.py` e `scripts/rag_infer_batch.py`.
+
+- **scripts/train_distilbert.py**: `--processed` (caminho para CSV processado), `--output-dir` (onde salvar checkpoint), `--num-epochs` (épocas de treino), `--batch-size` (tamanho do batch de treino).
+
+- **scripts/build_vector_db.py**: `--processed` (CSV processado), `--chroma-dir` (diretório persistente do Chroma DB).
+
+- **scripts/evaluate.py**: `--processed` (CSV processado), `--checkpoint` (diretório do DistilBERT), `--out-dir` (onde salvar relatórios), `--sample-size` (número de amostras; padrão 200), `--use-train` (usar conjunto de treino em vez de validação), `--seed` (seed para amostragem).
+
+- **scripts/evaluate_rag.py**: mesmas opções de `evaluate.py` mais `--chroma-dir` (Chroma DB), `--mode` (`rag` ou `hybrid`), e flags de LLM: `--use-llm`, `--use-llm-remote`, `--remote-llm-url`, `--remote-llm-key`, `--llm-model`.
+
+- **scripts/rag_infer_batch.py**: `--input` (TXT ou CSV com coluna `text`), `--checkpoint`, `--chroma-dir`, `--mode` (`rag`|`hybrid`), `--out` (arquivo JSONL de saída), `--process-batch` (tamanho do bloco de processamento), `--llm-batch` (batch para geração LLM), `--use-llm`, `--llm-model`, `--use-llm-remote`, `--remote-llm-url`, `--remote-llm-key`.
+
+- **scripts/demo.py**: `--checkpoint`, `--chroma-dir`, `--use-llm`, `--llm-model`, `--use-llm-remote`, `--remote-llm-url`, `--remote-llm-key`, `--remote-llm-provider` (`hf`|`generic`), `--use-agent` (ativa o agent opcional), `--mode` (`rag`|`hybrid`), `--export-chroma` (exporta DB para ZIP), `--import-chroma` (importa ZIP) e `--import-overwrite`.
+
+- **scripts/download_data.py**: parâmetros para controlar destino do CSV processado (ex.: `--out-dir`), e credenciais Kaggle são lidas de `~/.kaggle/kaggle.json` quando necessárias.
+
+- **scripts/classify_ticket.py**: CLI para classificar um único ticket; aceita argumentos como `--text`, `--checkpoint`, `--chroma-dir`, `--use-llm`, `--mode`, etc. (use `--help` no script para ver a lista completa).
+
+Use `--help` em qualquer script para ver os parâmetros completos e o comportamento esperado. Exemplos rápidos aparecem nas seções anteriores do README.
