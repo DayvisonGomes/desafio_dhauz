@@ -186,7 +186,9 @@ def main():
     def hybrid_node(state: TicketState):
 
         ticket = state["ticket"]
+        bert_res = hybrid.rag.distilbert.predict_with_confidence(ticket)
 
+        print("DistilBERT prediction:", bert_res)
         result = hybrid.classify_batch(ticket)[0]
 
         return {
@@ -241,10 +243,17 @@ def main():
         if ticket.lower() in {"exit", "quit"}:
             break
 
-        result = agent.invoke({
-            "ticket": ticket,
-            "mode": args.mode
-        })
+        for step in agent.stream({
+                "ticket": ticket,
+                "mode": args.mode
+            }):
+
+            node = list(step.keys())[0]
+
+            print(f"\nExecuted node: {node}")
+            print("Output:", step[node])
+
+            result = step[node]
 
         print("\nPrediction:", result["prediction"])
         print("Justification:", result["justification"])
