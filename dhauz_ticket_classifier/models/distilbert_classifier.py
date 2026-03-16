@@ -35,7 +35,7 @@ class DistilBERTClassifier:
             num_train_epochs=num_epochs,
             logging_steps=100,
             fp16=torch.cuda.is_available(),
-            evaluation_strategy="epoch",
+            eval_strategy="epoch",
             save_strategy="epoch",
             load_best_model_at_end=True,
             metric_for_best_model="f1",
