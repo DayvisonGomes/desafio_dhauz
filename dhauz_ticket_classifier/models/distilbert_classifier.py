@@ -72,6 +72,22 @@ class DistilBERTClassifier:
         probs = torch.softmax(outputs.logits, dim=1).cpu().numpy()
         return probs
 
+    def predict_with_confidence(self, text: str, top_k: int = 3):
+
+        probs = self.predict_batch([text])[0]
+
+        sorted_idx = np.argsort(probs)[::-1]
+
+        top_idx = sorted_idx[:top_k]
+
+        top_classes = [self.classes[i] for i in top_idx]
+
+        confidence = float(probs[top_idx[0]])
+
+        prediction = top_classes[0]
+
+        return prediction, confidence, top_classes
+    
     def save(self, output_dir: str):
         """Save model and tokenizer to `output_dir`"""
         self.model.save_pretrained(output_dir)
