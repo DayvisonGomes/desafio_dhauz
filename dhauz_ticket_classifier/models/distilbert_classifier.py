@@ -75,19 +75,15 @@ class DistilBERTClassifier:
     def predict_with_confidence(self, text: str, top_k: int = 3, classes: List[str] = None):
 
         probs = self.predict_batch([text])[0]
-
         sorted_idx = np.argsort(probs)[::-1]
-
         top_idx = sorted_idx[:top_k]
 
         top_classes = [classes[i] for i in top_idx]
-
-        confidence = float(probs[top_idx[0]])
-
         prediction = top_classes[0]
+        dict_conf_pred = {classes[i]: float(probs[i]) for i in top_idx}
 
-        return prediction, confidence, top_classes
-    
+        return prediction, dict_conf_pred, top_classes
+
     def save(self, output_dir: str):
         """Save model and tokenizer to `output_dir`"""
         self.model.save_pretrained(output_dir)
