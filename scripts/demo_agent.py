@@ -14,7 +14,6 @@ from pathlib import Path
 import sys
 from typing import TypedDict, Optional
 
-# ensure project root is on sys.path
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -29,10 +28,6 @@ from dhauz_ticket_classifier.rag.classifier import RAGClassifier, HybridClassifi
 
 from langgraph.graph import StateGraph, END
 
-
-# =========================
-# Arguments
-# =========================
 
 def parse_args():
 
@@ -86,11 +81,6 @@ def parse_args():
     
     return parser.parse_args()
 
-
-# =========================
-# LangGraph State
-# =========================
-
 class TicketState(TypedDict):
 
     ticket: str
@@ -98,11 +88,6 @@ class TicketState(TypedDict):
     justification: Optional[str]
     confidence: Optional[float]
     mode: str
-
-
-# =========================
-# Main
-# =========================
 
 def main():
 
@@ -115,10 +100,6 @@ def main():
 
     print("DistilBERT loaded")
 
-    # =========================
-    # Load classes
-    # =========================
-
     dataset_path = Path(args.dataset)
 
     if not dataset_path.exists():
@@ -128,10 +109,6 @@ def main():
     classes = sorted(df["class"].unique())
 
     print("Detected classes:", classes)
-
-    # =========================
-    # Vector Store
-    # =========================
 
     vs = VectorStore(persist_dir=args.chroma_dir)
 
@@ -145,10 +122,6 @@ def main():
         print("Building Chroma DB from dataset...")
         vs.create_from_dataframe(df)
 
-    # =========================
-    # Optional LLM
-    # =========================
-
     llm = None
 
     if args.use_llm:
@@ -159,10 +132,6 @@ def main():
     else:
 
         print("LLM disabled (RAG will not work)")
-
-    # =========================
-    # Classifiers
-    # =========================
 
     rag = RAGClassifier(
         distilbert=distil,
@@ -179,14 +148,10 @@ def main():
 
     print("Classifiers ready")
 
-    # =========================
-    # LangGraph Nodes
-    # =========================
-
     def hybrid_node(state: TicketState):
 
         ticket = state["ticket"]
-        bert_res = hybrid.rag.distilbert.predict_with_confidence(ticket)
+        bert_res = hybrid.rag.distilbert.predict_with_confidence(text=ticket, classes=classes)
 
         print("DistilBERT prediction:", bert_res)
         result = hybrid.classify_batch(ticket)[0]
@@ -206,10 +171,6 @@ def main():
             "prediction": result["class"],
             "justification": result["justification"]
         }
-
-    # =========================
-    # Graph
-    # =========================
 
     graph = StateGraph(TicketState)
 
@@ -231,10 +192,6 @@ def main():
 
     print("\nAgent ready")
     print("Mode:", args.mode)
-
-    # =========================
-    # CLI
-    # =========================
 
     while True:
 

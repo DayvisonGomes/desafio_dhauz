@@ -72,7 +72,7 @@ class DistilBERTClassifier:
         probs = torch.softmax(outputs.logits, dim=1).cpu().numpy()
         return probs
 
-    def predict_with_confidence(self, text: str, top_k: int = 3):
+    def predict_with_confidence(self, text: str, top_k: int = 3, classes: List[str] = None):
 
         probs = self.predict_batch([text])[0]
 
@@ -80,7 +80,7 @@ class DistilBERTClassifier:
 
         top_idx = sorted_idx[:top_k]
 
-        top_classes = [self.classes[i] for i in top_idx]
+        top_classes = [classes[i] for i in top_idx]
 
         confidence = float(probs[top_idx[0]])
 
